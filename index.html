@@ -438,7 +438,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Nu
   <div class="netflix-intro">
     <div class="n-glow" id="nGlow"></div>
 
-    <!-- N drawn in SVG strokes -->
+    <!-- E drawn in SVG strokes -->
     <svg class="n-svg" id="nSvg" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <filter id="shadow">
@@ -446,14 +446,13 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Nu
         </filter>
       </defs>
       <!-- Left vertical bar -->
-      <rect x="10" y="10" width="26" height="140" fill="#e50914" filter="url(#shadow)"/>
-      <!-- Right vertical bar -->
-      <rect x="124" y="10" width="26" height="140" fill="#e50914" filter="url(#shadow)"/>
-      <!-- Diagonal stroke -->
-      <polygon points="10,10 36,10 150,150 124,150" fill="#e50914" filter="url(#shadow)"/>
-      <!-- Inner fill to clean up -->
-      <polygon points="10,10 36,10 36,52 10,20" fill="#e50914"/>
-      <polygon points="124,110 150,140 150,150 124,150" fill="#e50914"/>
+      <rect x="15" y="10" width="26" height="140" fill="#e50914" filter="url(#shadow)"/>
+      <!-- Top horizontal bar -->
+      <rect x="15" y="10" width="115" height="26" fill="#e50914" filter="url(#shadow)"/>
+      <!-- Middle horizontal bar -->
+      <rect x="15" y="67" width="90" height="26" fill="#e50914" filter="url(#shadow)"/>
+      <!-- Bottom horizontal bar -->
+      <rect x="15" y="124" width="115" height="26" fill="#e50914" filter="url(#shadow)"/>
     </svg>
 
     <div class="encefalo-logo-intro" id="encefaloBrand">EncéfaloFlix</div>
