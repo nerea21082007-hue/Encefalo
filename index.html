@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EncéfaloFlix</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Nunito',sans-serif}
+
+/* ─── SCREENS ─── */
+.screen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .6s}
+.screen.active{opacity:1;pointer-events:all}
+
+/* ─── SCREEN 1: INTRO ─── */
+#screen-intro{background:#000;flex-direction:column;gap:0}
+
+.netflix-intro{position:relative;width:180px;height:180px;display:flex;align-items:center;justify-content:center}
+
+/* The N letter drawn with SVG */
+.n-svg{width:160px;height:160px;opacity:0;animation:none}
+.n-svg.run{animation:nAppear .05s .2s forwards}
+@keyframes nAppear{to{opacity:1}}
+
+/* Red glow behind N */
+.n-glow{
+  position:absolute;inset:-30px;border-radius:50%;
+  background:radial-gradient(circle,rgba(229,9,20,.7) 0%,transparent 70%);
+  opacity:0;filter:blur(20px);
+  animation:none
+}
+.n-glow.run{animation:glowIn .4s .2s forwards}
+@keyframes glowIn{to{opacity:1}}
+
+/* Sound wave lines */
+.sound-bars{position:absolute;bottom:-50px;left:50%;transform:translateX(-50%);
+  display:flex;gap:5px;align-items:flex-end;height:40px;opacity:0}
+.sound-bars.run{animation:barsIn .3s .5s forwards}
+@keyframes barsIn{to{opacity:1}}
+.bar{width:5px;background:var(--r,#e50914);border-radius:3px;
+  animation:none;transform-origin:bottom}
+.sound-bars.run .bar{animation:barPulse 1s .5s ease-in-out infinite alternate}
+.bar:nth-child(1){height:12px;animation-delay:.5s!important}
+.bar:nth-child(2){height:28px;animation-delay:.6s!important}
+.bar:nth-child(3){height:38px;animation-delay:.55s!important}
+.bar:nth-child(4){height:22px;animation-delay:.65s!important}
+.bar:nth-child(5){height:35px;animation-delay:.52s!important}
+.bar:nth-child(6){height:18px;animation-delay:.7s!important}
+.bar:nth-child(7){height:30px;animation-delay:.58s!important}
+@keyframes barPulse{from{transform:scaleY(.3)}to{transform:scaleY(1)}}
+
+/* Transform N → logo text */
+.encefalo-logo-intro{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:3.5rem;letter-spacing:6px;
+  color:#e50914;text-shadow:0 0 40px rgba(229,9,20,.8);
+  position:absolute;
+  opacity:0;white-space:nowrap;
+  animation:none
+}
+.encefalo-logo-intro.run{animation:logoReveal .5s 1.8s cubic-bezier(.25,.46,.45,.94) forwards}
+@keyframes logoReveal{
+  from{opacity:0;transform:scale(1.3) translateY(10px)}
+  to{opacity:1;transform:scale(1) translateY(0)}
+}
+.n-svg.hide{animation:nFade .3s 1.7s forwards}
+@keyframes nFade{to{opacity:0;transform:scale(1.5)}}
+.n-glow.hide{animation:glowOut .3s 1.7s forwards}
+@keyframes glowOut{to{opacity:0}}
+.sound-bars.hide{animation:barsOut .3s 1.6s forwards}
+@keyframes barsOut{to{opacity:0;transform:translateX(-50%) translateY(10px)}}
+
+.tagline-intro{
+  font-size:1rem;color:#888;letter-spacing:4px;text-transform:uppercase;
+  margin-top:90px;opacity:0;position:relative;z-index:2;
+  animation:none
+}
+.tagline-intro.run{animation:tagIn .5s 2.1s forwards}
+@keyframes tagIn{to{opacity:1}}
+
+/* ─── SCREEN 2: PROFILES ─── */
+#screen-profiles{
+  background:
+    radial-gradient(ellipse at 50% 0%,rgba(229,9,20,.08) 0%,transparent 60%),
+    #141414;
+  flex-direction:column;gap:3rem
+}
+.profiles-logo{
+  font-family:'Bebas Neue',sans-serif;font-size:2.5rem;
+  color:#e50914;letter-spacing:4px;
+  text-shadow:0 0 20px rgba(229,9,20,.4)
+}
+.profiles-title{font-size:1.4rem;color:#e5e5e5;font-weight:300;letter-spacing:2px}
+.profiles-row{display:flex;gap:2.5rem;justify-content:center;align-items:center}
+
+.profile-card{
+  display:flex;flex-direction:column;align-items:center;gap:.8rem;
+  cursor:pointer;
+  transition:transform .25s
+}
+.profile-card:hover{transform:scale(1.08)}
+.profile-card:hover .profile-avatar{border-color:#e50914;box-shadow:0 0 30px rgba(229,9,20,.5)}
+.profile-card:hover .profile-name{color:#fff}
+
+.profile-avatar{
+  width:110px;height:110px;border-radius:10px;
+  border:3px solid transparent;
+  display:flex;align-items:center;justify-content:center;
+  font-size:3.5rem;
+  transition:border-color .25s,box-shadow .25s;
+  position:relative;overflow:hidden
+}
+.profile-avatar::before{
+  content:'';position:absolute;inset:0;
+  opacity:.15
+}
+.av-maria{background:linear-gradient(135deg,#2d0808,#1a0505);font-size:3rem}
+.av-maria::before{background:radial-gradient(circle,#e50914,transparent)}
+.av-add{background:#222;border:3px dashed #444!important;font-size:2.5rem;color:#666}
+
+.profile-name{color:#aaa;font-size:1rem;font-weight:600;letter-spacing:1px;transition:color .25s}
+.profile-name.highlight{color:#fff}
+
+/* Animate profiles in */
+#screen-profiles.active .profile-card{
+  animation:profilePop .4s cubic-bezier(.25,.46,.45,.94) both
+}
+#screen-profiles.active .profile-card:nth-child(1){animation-delay:.1s}
+#screen-profiles.active .profile-card:nth-child(2){animation-delay:.2s}
+#screen-profiles.active .profile-card:nth-child(3){animation-delay:.3s}
+@keyframes profilePop{
+  from{opacity:0;transform:translateY(20px) scale(.9)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+
+/* ─── SCREEN 3: MAIN APP ─── */
+#screen-app{
+  background:#0a0a0a;
+  flex-direction:column;
+  align-items:stretch;justify-content:flex-start;
+  overflow:hidden
+}
+
+/* Fixed 16:9 presentation container */
+.app-shell{
+  width:100vw;height:100vh;
+  display:flex;flex-direction:column;
+  overflow:hidden;
+  position:relative
+}
+
+/* NAV */
+.app-nav{
+  position:absolute;top:0;left:0;right:0;z-index:50;
+  display:flex;align-items:center;gap:2rem;
+  padding:.8rem 2.5rem;
+  background:linear-gradient(to bottom,rgba(0,0,0,.9) 0%,transparent 100%);
+}
+.app-logo{font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:#e50914;letter-spacing:3px}
+.app-logo span{color:#e5e5e5}
+.app-nav-links{display:flex;gap:1.5rem;list-style:none}
+.app-nav-links a{color:#bbb;text-decoration:none;font-size:.85rem;transition:color .2s}
+.app-nav-links a:hover{color:#fff}
+.app-profile-dot{
+  margin-left:auto;width:34px;height:34px;border-radius:8px;
+  background:linear-gradient(135deg,#2d0808,#e50914);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1rem;cursor:pointer;border:2px solid rgba(229,9,20,.5)
+}
+
+/* HERO */
+.hero{
+  position:relative;
+  flex:0 0 58vh;
+  display:flex;align-items:flex-end;
+  padding:0 2.5rem 2rem;
+  overflow:hidden
+}
+.hero-bg{
+  position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse at 65% 35%,rgba(229,9,20,.18) 0%,transparent 55%),
+    radial-gradient(ellipse at 20% 80%,rgba(100,0,0,.2) 0%,transparent 40%),
+    linear-gradient(135deg,#0a0a0a 0%,#1a0505 50%,#0a0a0a 100%)
+}
+.hero-particles{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.particle{
+  position:absolute;width:2px;height:2px;border-radius:50%;
+  background:#e50914;opacity:0;
+  animation:float linear infinite
+}
+@keyframes float{
+  0%{opacity:0;transform:translateY(0) translateX(0)}
+  10%{opacity:.6}
+  90%{opacity:.3}
+  100%{opacity:0;transform:translateY(-100px) translateX(var(--dx,20px))}
+}
+.hero-art{
+  position:absolute;right:3%;top:50%;transform:translateY(-50%);
+  width:min(38vh,280px);opacity:.13;
+  animation:brainPulse 5s ease-in-out infinite
+}
+@keyframes brainPulse{
+  0%,100%{transform:translateY(-50%) scale(1);opacity:.13}
+  50%{transform:translateY(-50%) scale(1.05);opacity:.19}
+}
+.hero-overlay{
+  position:absolute;inset:0;
+  background:linear-gradient(to right,rgba(10,10,10,.97) 30%,rgba(10,10,10,.5) 65%,transparent 85%),
+             linear-gradient(to top,rgba(10,10,10,.95) 0%,transparent 45%)
+}
+.hero-content{position:relative;z-index:2;max-width:55%}
+.hero-badge{
+  display:inline-block;background:#e50914;color:#fff;
+  font-size:.65rem;font-weight:900;letter-spacing:3px;text-transform:uppercase;
+  padding:.25rem .7rem;border-radius:2px;margin-bottom:.6rem
+}
+.hero-title{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(2.5rem,5.5vw,4.2rem);line-height:.92;letter-spacing:2px;
+  margin-bottom:.5rem;text-shadow:3px 3px 15px rgba(0,0,0,.8)
+}
+.hero-title .acc{color:#e50914}
+.hero-sub{font-size:.85rem;color:#ccc;margin-bottom:1rem;line-height:1.6;max-width:430px;font-weight:300}
+.hero-meta{display:flex;gap:.8rem;align-items:center;font-size:.78rem;color:#999;margin-bottom:1.2rem}
+.hero-match{color:#46d369;font-weight:700}
+.hero-rating{border:1px solid #888;padding:.1rem .35rem;font-size:.7rem}
+.hero-btns{display:flex;gap:.8rem}
+.btn-play{
+  display:flex;align-items:center;gap:.5rem;
+  background:#fff;color:#000;border:none;border-radius:5px;
+  padding:.55rem 1.5rem;font-size:.95rem;font-weight:800;
+  cursor:pointer;transition:background .2s,transform .15s;font-family:'Nunito',sans-serif
+}
+.btn-play:hover{background:#ddd;transform:scale(1.03)}
+.btn-info{
+  display:flex;align-items:center;gap:.5rem;
+  background:rgba(109,109,110,.7);color:#fff;border:none;border-radius:5px;
+  padding:.55rem 1.5rem;font-size:.95rem;font-weight:800;
+  cursor:pointer;transition:background .2s;font-family:'Nunito',sans-serif
+}
+.btn-info:hover{background:rgba(109,109,110,.5)}
+
+/* EPISODES ROW */
+.episodes-row{
+  flex:1;
+  padding:.8rem 2.5rem 1rem;
+  overflow:hidden;display:flex;flex-direction:column
+}
+.row-header{
+  display:flex;align-items:center;gap:1rem;margin-bottom:.8rem
+}
+.row-title{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:2px}
+.row-line{flex:1;height:1px;background:linear-gradient(to right,rgba(229,9,20,.4),transparent)}
+.row-season{color:#777;font-size:.78rem}
+
+.ep-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;flex:1}
+
+.ep-card{
+  background:#1a1a1a;border-radius:8px;overflow:hidden;cursor:pointer;
+  display:flex;flex-direction:column;
+  border:1px solid rgba(255,255,255,.05);
+  transition:transform .3s cubic-bezier(.25,.46,.45,.94),box-shadow .3s,border-color .3s;
+  position:relative
+}
+.ep-card:hover{
+  transform:translateY(-6px) scale(1.02);
+  box-shadow:0 15px 40px rgba(229,9,20,.25),0 8px 20px rgba(0,0,0,.6);
+  border-color:rgba(229,9,20,.35);z-index:5
+}
+.ep-card:hover .ep-ov{opacity:1}
+.ep-card:hover .ep-play{opacity:1;transform:translate(-50%,-50%) scale(1)}
+
+.ep-thumb{position:relative;aspect-ratio:16/9;background:#111;overflow:hidden}
+.ep-thumb-bg{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-size:3rem
+}
+.ep-card[data-ep="1"] .ep-thumb-bg{background:linear-gradient(135deg,#1a0a0a,#2d0808)}
+.ep-card[data-ep="2"] .ep-thumb-bg{background:linear-gradient(135deg,#0a0d1a,#08162d)}
+.ep-card[data-ep="3"] .ep-thumb-bg{background:linear-gradient(135deg,#0a1a0a,#082d14)}
+.ep-num-shadow{
+  position:absolute;right:8px;bottom:2px;
+  font-family:'Bebas Neue',sans-serif;font-size:4.5rem;line-height:1;
+  color:rgba(255,255,255,.06);user-select:none;pointer-events:none
+}
+.ep-badge{
+  position:absolute;top:8px;left:8px;
+  background:#e50914;color:#fff;font-size:.6rem;font-weight:900;
+  letter-spacing:2px;text-transform:uppercase;padding:.18rem .45rem;border-radius:2px
+}
+.ep-ov{position:absolute;inset:0;background:rgba(229,9,20,.12);opacity:0;transition:opacity .3s}
+.ep-play{
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%) scale(.75);
+  width:44px;height:44px;background:rgba(255,255,255,.92);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;transition:all .3s
+}
+.ep-thumb video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none}
+.ep-thumb.has-video video{display:block}
+.ep-thumb.has-video .ep-thumb-bg{display:none}
+
+.ep-body{padding:.65rem .9rem .8rem;flex:1;display:flex;flex-direction:column;gap:.3rem}
+.ep-num-label{font-size:.68rem;color:#777;font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.ep-title{font-size:.9rem;font-weight:900;color:#fff;line-height:1.2}
+.ep-desc{font-size:.72rem;color:#999;line-height:1.45;flex:1}
+.ep-tags{display:flex;gap:.35rem;flex-wrap:wrap;margin-top:.3rem}
+.ep-tag{font-size:.6rem;font-weight:700;letter-spacing:.8px;padding:.15rem .5rem;border-radius:20px;text-transform:uppercase}
+.tag-r{background:rgba(229,9,20,.12);color:#ff6b7a;border:1px solid rgba(229,9,20,.25)}
+.tag-b{background:rgba(70,120,229,.12);color:#7ba8ff;border:1px solid rgba(70,120,229,.25)}
+.tag-g{background:rgba(70,180,100,.12);color:#7bd498;border:1px solid rgba(70,180,100,.25)}
+
+/* Characters strip at bottom */
+.chars-strip{
+  position:absolute;bottom:0;left:0;right:0;
+  background:linear-gradient(to top,rgba(10,10,10,1) 60%,transparent);
+  display:none;padding:.5rem 2.5rem 1rem;
+}
+
+/* ─── MODAL ─── */
+.modal-wrap{
+  position:fixed;inset:0;z-index:200;
+  background:rgba(0,0,0,.82);backdrop-filter:blur(10px);
+  display:flex;align-items:center;justify-content:center;
+  padding:1rem;opacity:0;pointer-events:none;transition:opacity .3s
+}
+.modal-wrap.open{opacity:1;pointer-events:all}
+.modal-box{
+  background:#1c1c1c;border-radius:14px;
+  width:100%;max-width:780px;
+  overflow:hidden;
+  transform:scale(.93) translateY(25px);
+  transition:transform .35s cubic-bezier(.25,.46,.45,.94);
+  position:relative;max-height:90vh;overflow-y:auto
+}
+.modal-wrap.open .modal-box{transform:scale(1) translateY(0)}
+.modal-hero{
+  position:relative;aspect-ratio:16/6;
+  display:flex;align-items:center;justify-content:center;font-size:6rem;overflow:hidden
+}
+.modal-hero-overlay{
+  position:absolute;inset:0;
+  background:linear-gradient(to top,#1c1c1c 0%,transparent 60%)
+}
+.modal-close{
+  position:absolute;top:.8rem;right:.8rem;
+  width:34px;height:34px;background:rgba(0,0,0,.7);border:none;border-radius:50%;
+  color:#fff;font-size:1.1rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;z-index:10;transition:background .2s
+}
+.modal-close:hover{background:rgba(80,80,80,.9)}
+.modal-body{padding:1.2rem 1.8rem 1.8rem}
+.modal-ep-label{font-size:.72rem;color:#888;font-weight:600;letter-spacing:2px;text-transform:uppercase;margin-bottom:.4rem}
+.modal-title{font-family:'Bebas Neue',sans-serif;font-size:1.9rem;letter-spacing:2px;margin-bottom:.8rem}
+.modal-meta{display:flex;gap:.8rem;align-items:center;font-size:.8rem;color:#888;margin-bottom:.8rem}
+.modal-match{color:#46d369;font-weight:700}
+.modal-desc{font-size:.88rem;line-height:1.7;color:#ccc;margin-bottom:1.2rem}
+.modal-chars-title{font-size:.72rem;color:#888;font-weight:600;letter-spacing:2px;text-transform:uppercase;margin-bottom:.6rem}
+.modal-chars-row{display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:1.2rem}
+.char-chip{
+  display:flex;align-items:center;gap:.4rem;
+  background:#252525;border-radius:20px;padding:.28rem .75rem .28rem .4rem;font-size:.78rem
+}
+.char-chip-icon{font-size:1rem}
+.char-chip-name{font-weight:700}
+.char-chip-role{color:#888;font-size:.7rem}
+.modal-vid-title{font-size:.72rem;color:#888;font-weight:600;letter-spacing:2px;text-transform:uppercase;margin-bottom:.6rem}
+.drop-zone{
+  border:2px dashed rgba(229,9,20,.4);border-radius:8px;
+  padding:1.8rem;text-align:center;cursor:pointer;
+  transition:all .2s;background:rgba(229,9,20,.04);position:relative;overflow:hidden
+}
+.drop-zone:hover{border-color:#e50914;background:rgba(229,9,20,.08)}
+.drop-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.drop-icon{font-size:2rem;margin-bottom:.4rem}
+.drop-text{font-size:.82rem;color:#888}
+.drop-text strong{color:#e50914}
+.vid-preview{width:100%;border-radius:8px;margin-top:.7rem;display:none;max-height:260px;background:#000;object-fit:contain}
+.vid-preview.show{display:block}
+
+/* ─── ANIMATIONS for app ─── */
+#screen-app.active .ep-card{
+  animation:cardIn .4s cubic-bezier(.25,.46,.45,.94) both
+}
+#screen-app.active .ep-card:nth-child(1){animation-delay:.15s}
+#screen-app.active .ep-card:nth-child(2){animation-delay:.25s}
+#screen-app.active .ep-card:nth-child(3){animation-delay:.35s}
+@keyframes cardIn{
+  from{opacity:0;transform:translateY(25px)}
+  to{opacity:1;transform:translateY(0)}
+}
+#screen-app.active .hero-content>*{
+  animation:heroEl .5s ease both
+}
+#screen-app.active .hero-content>*:nth-child(1){animation-delay:.3s}
+#screen-app.active .hero-content>*:nth-child(2){animation-delay:.4s}
+#screen-app.active .hero-content>*:nth-child(3){animation-delay:.5s}
+#screen-app.active .hero-content>*:nth-child(4){animation-delay:.6s}
+#screen-app.active .hero-content>*:nth-child(5){animation-delay:.7s}
+@keyframes heroEl{
+  from{opacity:0;transform:translateX(-20px)}
+  to{opacity:1;transform:translateX(0)}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════
+     SCREEN 1 — INTRO ANIMATION
+══════════════════════════════════ -->
+<div class="screen active" id="screen-intro">
+
+  <div class="netflix-intro">
+    <div class="n-glow" id="nGlow"></div>
+
+    <!-- N drawn in SVG strokes -->
+    <svg class="n-svg" id="nSvg" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <filter id="shadow">
+          <feDropShadow dx="0" dy="0" stdDeviation="6" flood-color="#e50914" flood-opacity=".8"/>
+        </filter>
+      </defs>
+      <!-- Left vertical bar -->
+      <rect x="10" y="10" width="26" height="140" fill="#e50914" filter="url(#shadow)"/>
+      <!-- Right vertical bar -->
+      <rect x="124" y="10" width="26" height="140" fill="#e50914" filter="url(#shadow)"/>
+      <!-- Diagonal stroke -->
+      <polygon points="10,10 36,10 150,150 124,150" fill="#e50914" filter="url(#shadow)"/>
+      <!-- Inner fill to clean up -->
+      <polygon points="10,10 36,10 36,52 10,20" fill="#e50914"/>
+      <polygon points="124,110 150,140 150,150 124,150" fill="#e50914"/>
+    </svg>
+
+    <div class="encefalo-logo-intro" id="encefaloBrand">EncéfaloFlix</div>
+  </div>
+
+  <div class="sound-bars" id="soundBars">
+    <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+    <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+    <div class="bar"></div>
+  </div>
+
+  <p class="tagline-intro" id="tagline">Instituto Sistema Nervioso</p>
+</div>
+
+<!-- ══════════════════════════════════
+     SCREEN 2 — PROFILES
+══════════════════════════════════ -->
+<div class="screen" id="screen-profiles">
+  <div class="profiles-logo">EncéfaloFlix</div>
+  <p class="profiles-title">¿Quién está viendo?</p>
+  <div class="profiles-row">
+
+    <div class="profile-card" onclick="selectProfile()">
+      <div class="profile-avatar av-maria">🧠</div>
+      <div class="profile-name highlight">María</div>
+    </div>
+
+    <div class="profile-card">
+      <div class="profile-avatar" style="background:linear-gradient(135deg,#0a1a2d,#082040);font-size:3rem">💡</div>
+      <div class="profile-name">Alumno 2</div>
+    </div>
+
+    <div class="profile-card">
+      <div class="profile-avatar" style="background:linear-gradient(135deg,#0a1a0a,#082014);font-size:3rem">⚡</div>
+      <div class="profile-name">Alumno 3</div>
+    </div>
+
+    <div class="profile-card" onclick="selectProfile()">
+      <div class="profile-avatar av-add">＋</div>
+      <div class="profile-name">Añadir perfil</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     SCREEN 3 — MAIN APP
+══════════════════════════════════ -->
+<div class="screen" id="screen-app">
+<div class="app-shell">
+
+  <!-- NAV -->
+  <nav class="app-nav">
+    <div class="app-logo">Encéfalo<span>Flix</span></div>
+    <ul class="app-nav-links">
+      <li><a href="#">Inicio</a></li>
+      <li><a href="#">Series</a></li>
+      <li><a href="#">Personajes</a></li>
+    </ul>
+    <div class="app-profile-dot">🧠</div>
+  </nav>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-bg"></div>
+    <!-- particles -->
+    <div class="hero-particles" id="heroParticles"></div>
+    <!-- brain art -->
+    <div class="hero-art">
+      <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="100" cy="85" rx="75" ry="65" stroke="white" stroke-width="1.5" fill="none"/>
+        <path d="M55 60 Q70 40 100 45 Q130 40 145 60" stroke="white" stroke-width="1.2" fill="none"/>
+        <path d="M40 85 Q55 70 70 76 Q82 64 96 70 Q104 60 114 70 Q128 64 142 76 Q157 70 160 85" stroke="white" stroke-width="1.2" fill="none"/>
+        <path d="M42 100 Q60 90 76 96 Q88 84 100 90 Q112 84 124 96 Q140 90 158 100" stroke="white" stroke-width="1.2" fill="none"/>
+        <path d="M48 115 Q66 105 80 111 Q90 103 100 109 Q110 103 120 111 Q134 105 152 115" stroke="white" stroke-width="1.2" fill="none"/>
+        <line x1="100" y1="45" x2="100" y2="150" stroke="white" stroke-width=".8" stroke-dasharray="4,4"/>
+        <rect x="86" y="150" width="28" height="26" rx="4" stroke="white" stroke-width="1.5" fill="none"/>
+        <line x1="100" y1="176" x2="100" y2="190" stroke="white" stroke-width="1.5"/>
+        <circle cx="100" cy="193" r="4" stroke="white" stroke-width="1.2" fill="none"/>
+      </svg>
+    </div>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <div class="hero-badge">Serie Original · Instituto</div>
+      <h1 class="hero-title">La Clase<br><span class="acc">Encéfalo</span></h1>
+      <p class="hero-sub">Cinco chicas. Cuatro partes del cerebro. Un concurso de baile. Solo trabajando juntas podrán controlar el rumbo de la clase.</p>
+      <div class="hero-meta">
+        <span class="hero-match">98% encajan contigo</span>
+        <span>2025</span>
+        <span class="hero-rating">Todos los públicos</span>
+        <span>3 episodios</span>
+      </div>
+      <div class="hero-btns">
+        <button class="btn-play" onclick="openModal(0)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+          Reproducir
+        </button>
+        <button class="btn-info" onclick="openModal(0)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          Más info
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- EPISODES -->
+  <div class="episodes-row">
+    <div class="row-header">
+      <h2 class="row-title">Episodios</h2>
+      <div class="row-line"></div>
+      <span class="row-season">Temporada 1</span>
+    </div>
+    <div class="ep-grid">
+
+      <!-- EP 1 -->
+      <div class="ep-card" data-ep="1" onclick="openModal(0)">
+        <div class="ep-thumb" id="thumb-0">
+          <div class="ep-thumb-bg">🧠</div>
+          <video id="vid-0" controls onclick="e=>e.stopPropagation()" src="episodio1.mp4"></video>
+          <span class="ep-num-shadow">1</span>
+          <div class="ep-badge">EP. 1</div>
+          <div class="ep-ov"></div>
+          <div class="ep-play"><svg width="15" height="15" viewBox="0 0 24 24" fill="#000"><polygon points="5,3 19,12 5,21"/></svg></div>
+        </div>
+        <div class="ep-body">
+          <div class="ep-num-label">Episodio 1</div>
+          <div class="ep-title">"La Cerebrito"</div>
+          <div class="ep-desc">La coreo es perfecta… pero algo falla. Quizás necesiten a alguien que nunca esperaban pedir ayuda.</div>
+          <div class="ep-tags"><span class="ep-tag tag-r">Cerebro</span><span class="ep-tag tag-b">Planificación</span></div>
+        </div>
+      </div>
+
+      <!-- EP 2 -->
+      <div class="ep-card" data-ep="2" onclick="openModal(1)">
+        <div class="ep-thumb" id="thumb-1">
+          <div class="ep-thumb-bg">🌀</div>
+          <video id="vid-1" controls onclick="e=>e.stopPropagation()" src="episodio2.mp4"></video>
+          <span class="ep-num-shadow">2</span>
+          <div class="ep-badge">EP. 2</div>
+          <div class="ep-ov"></div>
+          <div class="ep-play"><svg width="15" height="15" viewBox="0 0 24 24" fill="#000"><polygon points="5,3 19,12 5,21"/></svg></div>
+        </div>
+        <div class="ep-body">
+          <div class="ep-num-label">Episodio 2</div>
+          <div class="ep-title">"La Cerebelo"</div>
+          <div class="ep-desc">Pensar un movimiento no es lo mismo que ejecutarlo bien. La coordinación tiene su propia ciencia.</div>
+          <div class="ep-tags"><span class="ep-tag tag-b">Cerebelo</span><span class="ep-tag tag-g">Coordinación</span></div>
+        </div>
+      </div>
+
+      <!-- EP 3 -->
+      <div class="ep-card" data-ep="3" onclick="openModal(2)">
+        <div class="ep-thumb" id="thumb-2">
+          <div class="ep-thumb-bg">✨</div>
+          <video id="vid-2" controls onclick="e=>e.stopPropagation()" src="episodio3.mp4"></video>
+          <span class="ep-num-shadow">3</span>
+          <div class="ep-badge">EP. 3</div>
+          <div class="ep-ov"></div>
+          <div class="ep-play"><svg width="15" height="15" viewBox="0 0 24 24" fill="#000"><polygon points="5,3 19,12 5,21"/></svg></div>
+        </div>
+        <div class="ep-body">
+          <div class="ep-num-label">Episodio 3</div>
+          <div class="ep-title">"Unidas por la Tronqui"</div>
+          <div class="ep-desc">Bea irrumpe y salva a Olga. Por fin todas entienden su función. Juntas, el baile sale perfecto.</div>
+          <div class="ep-tags"><span class="ep-tag tag-g">Tronco Enc.</span><span class="ep-tag tag-r">Final</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- end app-shell -->
+</div><!-- end screen-app -->
+
+<!-- ══════════════════════════════════
+     MODAL
+══════════════════════════════════ -->
+<div class="modal-wrap" id="modalWrap" onclick="closeModalOutside(event)">
+  <div class="modal-box" id="modalBox">
+    <div class="modal-hero" id="modalHero">
+      <div id="modalEmoji" style="position:relative;z-index:1;font-size:5rem">🧠</div>
+      <div class="modal-hero-overlay"></div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-ep-label" id="mLabel">Episodio 1</div>
+      <div class="modal-title" id="mTitle">—</div>
+      <div class="modal-meta">
+        <span class="modal-match">98% encajan</span>
+        <span>2025</span><span>Todos los públicos</span>
+      </div>
+      <div class="modal-desc" id="mDesc">—</div>
+      <div class="modal-chars-title">Personajes del episodio</div>
+      <div class="modal-chars-row" id="mChars"></div>
+      <div class="modal-vid-title">Tu vídeo</div>
+      <div class="drop-zone" id="mDrop">
+        <input type="file" accept="video/*" onchange="handleUpload(event)" id="mFile">
+        <div class="drop-icon">🎬</div>
+        <div class="drop-text">Haz clic o arrastra tu <strong>vídeo</strong> aquí</div>
+      </div>
+      <video class="vid-preview" id="mPreview" controls></video>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ── DATA ── */
+const EPS = [
+  {
+    emoji:'🧠', label:'Episodio 1', title:'"La Cerebrito"',
+    bg:'linear-gradient(135deg,#2d0808,#1a0505)',
+    desc:'Almudena tiene el plan perfecto para ganar el concurso de baile. Pero cuando empiezan a practicar, algo falla: nadie consigue coordinarse. Desde la ventana descubren a Sofía bailando sin esfuerzo. Odian decirlo… pero la necesitan.',
+    chars:[{i:'🧠',n:'Almudena',r:'La Cerebrito'},{i:'💡',n:'Olga',r:'La Cortada'},{i:'⚡',n:'Silvia',r:'La Impulsiva'}]
+  },
+  {
+    emoji:'🌀', label:'Episodio 2', title:'"La Cerebelo"',
+    bg:'linear-gradient(135deg,#08162d,#0a0d1a)',
+    desc:'Sofía lleva esperando mucho tiempo este momento. Con entusiasmo les enseña que pensar un movimiento no garantiza ejecutarlo: hace falta coordinación. Almudena empieza a pillarlo.',
+    chars:[{i:'🌀',n:'Sofía',r:'La Equilibrio'},{i:'🧠',n:'Almudena',r:'La Cerebrito'},{i:'💡',n:'Olga',r:'La Cortada'},{i:'⚡',n:'Silvia',r:'La Impulsiva'}]
+  },
+  {
+    emoji:'✨', label:'Episodio 3', title:'"Unidas por la Tronqui"',
+    bg:'linear-gradient(135deg,#082d14,#0a1a0a)',
+    desc:'Ensayo final con música. Bea aparece y salva a Olga del mareo. Por fin todas comprenden: Almudena piensa el movimiento, Sofía lo coordina, Bea mantiene el cuerpo funcionando. Juntas, el baile sale perfecto y el trofeo es suyo.',
+    chars:[{i:'🌿',n:'Bea',r:'La Tronqui'},{i:'🧠',n:'Almudena',r:'La Cerebrito'},{i:'🌀',n:'Sofía',r:'La Equilibrio'},{i:'💡',n:'Olga',r:'La Cortada'},{i:'⚡',n:'Silvia',r:'La Impulsiva'}]
+  }
+];
+// Nombres de los archivos de vídeo — deben estar en la misma carpeta que index.html
+const VIDEO_FILES=['episodio1.mp4','episodio2.mp4','episodio3.mp4'];
+const videos={0:null,1:null,2:null};
+let curEp=0;
+
+// Intentar cargar los vídeos automáticamente al arrancar
+function tryAutoLoadVideos(){
+  VIDEO_FILES.forEach((filename,idx)=>{
+    fetch(filename,{method:'HEAD'})
+      .then(r=>{
+        if(r.ok){
+          videos[idx]=filename;
+          const v=document.getElementById('vid-'+idx);
+          const t=document.getElementById('thumb-'+idx);
+          v.src=filename;
+          t.classList.add('has-video');
+        }
+      }).catch(()=>{});
+  });
+}
+
+/* ── INTRO SEQUENCE ── */
+window.addEventListener('load',()=>{
+  const nSvg=document.getElementById('nSvg');
+  const nGlow=document.getElementById('nGlow');
+  const brand=document.getElementById('encefaloBrand');
+  const bars=document.getElementById('soundBars');
+  const tag=document.getElementById('tagline');
+
+  // Start animations
+  setTimeout(()=>{
+    nSvg.classList.add('run');
+    nGlow.classList.add('run');
+    bars.classList.add('run');
+  },200);
+  setTimeout(()=>{tag.classList.add('run');},2100);
+  // Morph N → logo
+  setTimeout(()=>{
+    nSvg.classList.add('hide');
+    nGlow.classList.add('hide');
+    bars.classList.add('hide');
+    brand.classList.add('run');
+  },1700);
+  // Go to profiles
+  setTimeout(()=>{ goTo('screen-profiles'); },3400);
+});
+
+function goTo(id){
+  document.querySelectorAll('.screen').forEach(s=>{
+    s.classList.remove('active');
+  });
+  document.getElementById(id).classList.add('active');
+}
+
+function selectProfile(){
+  goTo('screen-app');
+  spawnParticles();
+  tryAutoLoadVideos();
+}
+
+/* ── PARTICLES ── */
+function spawnParticles(){
+  const container=document.getElementById('heroParticles');
+  for(let i=0;i<18;i++){
+    const p=document.createElement('div');
+    p.className='particle';
+    p.style.cssText=`
+      left:${Math.random()*100}%;
+      bottom:${Math.random()*40}%;
+      --dx:${(Math.random()-0.5)*40}px;
+      animation:float ${3+Math.random()*4}s ${Math.random()*3}s linear infinite;
+      width:${1+Math.random()*3}px;height:${1+Math.random()*3}px;
+      background:${Math.random()>.5?'#e50914':'#ff6b7a'};
+    `;
+    container.appendChild(p);
+  }
+}
+
+/* ── MODAL ── */
+function openModal(idx){
+  curEp=idx;
+  const ep=EPS[idx];
+  document.getElementById('modalEmoji').textContent=ep.emoji;
+  document.getElementById('modalHero').style.background=ep.bg;
+  document.getElementById('mLabel').textContent=ep.label;
+  document.getElementById('mTitle').textContent=ep.title;
+  document.getElementById('mDesc').textContent=ep.desc;
+  document.getElementById('mChars').innerHTML=ep.chars.map(c=>`
+    <div class="char-chip">
+      <span class="char-chip-icon">${c.i}</span>
+      <div><div class="char-chip-name">${c.n}</div><div class="char-chip-role">${c.r}</div></div>
+    </div>`).join('');
+  const prev=document.getElementById('mPreview');
+  const drop=document.getElementById('mDrop');
+  if(videos[idx]){
+    prev.src=videos[idx]; prev.classList.add('show'); drop.style.display='none';
+  } else {
+    prev.classList.remove('show'); prev.src=''; drop.style.display='block';
+  }
+  document.getElementById('modalWrap').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeModal(){
+  document.getElementById('modalWrap').classList.remove('open');
+  document.body.style.overflow='';
+}
+function closeModalOutside(e){
+  if(e.target===document.getElementById('modalWrap')) closeModal();
+}
+function handleUpload(e){
+  const file=e.target.files[0]; if(!file) return;
+  const url=URL.createObjectURL(file);
+  videos[curEp]=url;
+  const prev=document.getElementById('mPreview');
+  prev.src=url; prev.classList.add('show');
+  document.getElementById('mDrop').style.display='none';
+  // Update card
+  const v=document.getElementById('vid-'+curEp);
+  const t=document.getElementById('thumb-'+curEp);
+  v.src=url; t.classList.add('has-video');
+  e.target.value='';
+}
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeModal(); });
+</script>
+</body>
+</html>
