@@ -594,6 +594,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Nu
         <div class="ep-thumb" id="thumb-1">
           <div class="ep-thumb-bg">🌀</div>
           <video id="vid-1" controls onclick="e=>e.stopPropagation()" src="episodio2.mp4"></video>
+          <iframe id="iframe-1" style="position:absolute;inset:0;width:100%;height:100%;display:none;border:none" src="https://drive.google.com/file/d/1iHai9Qte4vivmJgk35ZZfrXgbsyfEvIE/preview" allowfullscreen></iframe>
           <span class="ep-num-shadow">2</span>
           <div class="ep-badge">EP. 2</div>
           <div class="ep-ov"></div>
@@ -612,6 +613,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Nu
         <div class="ep-thumb" id="thumb-2">
           <div class="ep-thumb-bg">✨</div>
           <video id="vid-2" controls onclick="e=>e.stopPropagation()" src="episodio3.mp4"></video>
+          <iframe id="iframe-2" style="position:absolute;inset:0;width:100%;height:100%;display:none;border:none" src="https://drive.google.com/file/d/1tHOqgsPLXVy76enbEjfFRg0OZsg3OSrD/preview" allowfullscreen></iframe>
           <span class="ep-num-shadow">3</span>
           <div class="ep-badge">EP. 3</div>
           <div class="ep-ov"></div>
@@ -688,10 +690,14 @@ const EPS = [
 // Nombres de los archivos de vídeo — episodios desde Google Drive
 const VIDEO_FILES=[
   'https://drive.google.com/file/d/1OKeUNaCLJrTKNcRFWkKhA9gn0angryTE/preview',
-  'episodio2.mp4',
-  'episodio3.mp4'
+  'https://drive.google.com/file/d/1iHai9Qte4vivmJgk35ZZfrXgbsyfEvIE/preview',
+  'https://drive.google.com/file/d/1tHOqgsPLXVy76enbEjfFRg0OZsg3OSrD/preview'
 ];
-const videos={0:'https://drive.google.com/file/d/1OKeUNaCLJrTKNcRFWkKhA9gn0angryTE/preview',1:null,2:null};
+const videos={
+  0:'https://drive.google.com/file/d/1OKeUNaCLJrTKNcRFWkKhA9gn0angryTE/preview',
+  1:'https://drive.google.com/file/d/1iHai9Qte4vivmJgk35ZZfrXgbsyfEvIE/preview',
+  2:'https://drive.google.com/file/d/1tHOqgsPLXVy76enbEjfFRg0OZsg3OSrD/preview'
+};
 let curEp=0;
 
 // Intentar cargar los vídeos automáticamente al arrancar
