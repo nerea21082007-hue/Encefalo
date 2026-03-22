@@ -301,6 +301,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Nu
 }
 .ep-thumb video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none}
 .ep-thumb.has-video video{display:block}
+.ep-thumb.has-video iframe{display:block!important}
 .ep-thumb.has-video .ep-thumb-bg{display:none}
 
 .ep-body{padding:.65rem .9rem .8rem;flex:1;display:flex;flex-direction:column;gap:.3rem}
@@ -573,7 +574,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Nu
       <div class="ep-card" data-ep="1" onclick="openModal(0)">
         <div class="ep-thumb" id="thumb-0">
           <div class="ep-thumb-bg">🧠</div>
-          <video id="vid-0" controls onclick="e=>e.stopPropagation()" src="episodio1.mp4"></video>
+          <video id="vid-0" controls onclick="e=>e.stopPropagation()" src=""></video>
+          <iframe id="iframe-0" style="position:absolute;inset:0;width:100%;height:100%;display:none;border:none" src="https://drive.google.com/file/d/1OKeUNaCLJrTKNcRFWkKhA9gn0angryTE/preview" allowfullscreen></iframe>
           <span class="ep-num-shadow">1</span>
           <div class="ep-badge">EP. 1</div>
           <div class="ep-ov"></div>
@@ -656,6 +658,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Nu
         <div class="drop-text">Haz clic o arrastra tu <strong>vídeo</strong> aquí</div>
       </div>
       <video class="vid-preview" id="mPreview" controls></video>
+      <iframe class="vid-preview" id="mIframe" allowfullscreen style="display:none;width:100%;border-radius:8px;margin-top:.7rem;aspect-ratio:16/9;border:none;background:#000"></iframe>
     </div>
   </div>
 </div>
@@ -682,24 +685,38 @@ const EPS = [
     chars:[{i:'🌿',n:'Alba D.',r:'La Tronqui'},{i:'🧠',n:'Alba B.',r:'La Cerebrito'},{i:'🌀',n:'Davinia',r:'La Equilibrio'},{i:'💡',n:'Claudia G.',r:'La Cortada'},{i:'⚡',n:'Nerea B.',r:'La Impulsiva'}]
   }
 ];
-// Nombres de los archivos de vídeo — deben estar en la misma carpeta que index.html
-const VIDEO_FILES=['episodio1.mp4','episodio2.mp4','episodio3.mp4'];
-const videos={0:null,1:null,2:null};
+// Nombres de los archivos de vídeo — episodios desde Google Drive
+const VIDEO_FILES=[
+  'https://drive.google.com/file/d/1OKeUNaCLJrTKNcRFWkKhA9gn0angryTE/preview',
+  'episodio2.mp4',
+  'episodio3.mp4'
+];
+const videos={0:'https://drive.google.com/file/d/1OKeUNaCLJrTKNcRFWkKhA9gn0angryTE/preview',1:null,2:null};
 let curEp=0;
 
 // Intentar cargar los vídeos automáticamente al arrancar
 function tryAutoLoadVideos(){
-  VIDEO_FILES.forEach((filename,idx)=>{
-    fetch(filename,{method:'HEAD'})
-      .then(r=>{
-        if(r.ok){
-          videos[idx]=filename;
-          const v=document.getElementById('vid-'+idx);
-          const t=document.getElementById('thumb-'+idx);
-          v.src=filename;
-          t.classList.add('has-video');
-        }
-      }).catch(()=>{});
+  VIDEO_FILES.forEach((src,idx)=>{
+    if(!src) return;
+    if(src.includes('drive.google.com')){
+      // Google Drive — mostrar iframe directamente
+      videos[idx]=src;
+      const t=document.getElementById('thumb-'+idx);
+      const iframe=document.getElementById('iframe-'+idx);
+      if(iframe){ iframe.style.display='block'; }
+      t.classList.add('has-video');
+    } else {
+      fetch(src,{method:'HEAD'})
+        .then(r=>{
+          if(r.ok){
+            videos[idx]=src;
+            const v=document.getElementById('vid-'+idx);
+            const t=document.getElementById('thumb-'+idx);
+            v.src=src;
+            t.classList.add('has-video');
+          }
+        }).catch(()=>{});
+    }
   });
 }
 
@@ -777,10 +794,21 @@ function openModal(idx){
     </div>`).join('');
   const prev=document.getElementById('mPreview');
   const drop=document.getElementById('mDrop');
+  const iframe=document.getElementById('mIframe');
   if(videos[idx]){
-    prev.src=videos[idx]; prev.classList.add('show'); drop.style.display='none';
+    if(videos[idx].includes('drive.google.com')){
+      prev.classList.remove('show'); prev.style.display='none';
+      iframe.src=videos[idx]; iframe.style.display='block';
+      drop.style.display='none';
+    } else {
+      iframe.style.display='none';
+      prev.src=videos[idx]; prev.classList.add('show'); prev.style.display='block';
+      drop.style.display='none';
+    }
   } else {
-    prev.classList.remove('show'); prev.src=''; drop.style.display='block';
+    prev.classList.remove('show'); prev.style.display='none';
+    iframe.style.display='none'; iframe.src='';
+    drop.style.display='block';
   }
   document.getElementById('modalWrap').classList.add('open');
   document.body.style.overflow='hidden';
